@@ -408,16 +408,25 @@
             
             if (html.includes('spareParts__searchResults') && !html.includes('spareParts__noSearchResults')) {
                 let name = article.pid;
-                let price = '';
+                let priceValue = 0;
                 
-                const nameMatch = html.match(/"item_name":"([^"]+)"/);
-                if (nameMatch) name = nameMatch[1].replace(/&ouml;/g, 'ö').replace(/&auml;/g, 'ä').replace(/&uuml;/g, 'ü').replace(/&szlig;/g, 'ß');
+                // HTML uses &quot; for quotes in data attributes
+                const nameMatch = html.match(/&quot;item_name&quot;\\s*:\\s*&quot;(.+?)&quot;/);
+                if (nameMatch) {
+                    name = nameMatch[1]
+                        .replace(/&ouml;/g, 'ö').replace(/&auml;/g, 'ä').replace(/&uuml;/g, 'ü')
+                        .replace(/&Ouml;/g, 'Ö').replace(/&Auml;/g, 'Ä').replace(/&Uuml;/g, 'Ü')
+                        .replace(/&szlig;/g, 'ß').replace(/&amp;/g, '&');
+                }
                 
-                const priceMatch = html.match(/"price":([0-9.]+)/);
-                if (priceMatch) price = ' (' + parseFloat(priceMatch[1]).toFixed(2).replace('.', ',') + ' €)';
+                const priceMatch = html.match(/&quot;price&quot;\\s*:\\s*([0-9.]+)/);
+                if (priceMatch) {
+                    priceValue = parseFloat(priceMatch[1]);
+                }
                 
-                console.log('%c  ✅ Verfügbar: ' + name + price, 'color: #22c55e;');
-                availableArticles.push({ ...article, name, price: priceMatch ? parseFloat(priceMatch[1]) : 0 });
+                const priceStr = priceValue > 0 ? ' – ' + priceValue.toFixed(2).replace('.', ',') + ' €' : '';
+                console.log('%c  ✅ ' + name + priceStr + ' (x' + article.qty + ')', 'color: #22c55e;');
+                availableArticles.push({ ...article, name, price: priceValue });
             } else {
                 console.log('%c  ❌ Nicht verfügbar', 'color: #ef4444;');
                 unavailableArticles.push(article.pid);
@@ -430,11 +439,18 @@
         await new Promise(r => setTimeout(r, 200));
     }
     
+    // Berechne Gesamtsumme
+    let totalPrice = 0;
+    availableArticles.forEach(a => { totalPrice += a.price * a.qty; });
+    
     // Zusammenfassung Phase 1
     console.log('\\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
     console.log('%c📋 Verfügbarkeits-Übersicht', 'font-size: 14px; font-weight: bold;');
     console.log(\`✅ Verfügbar: \${availableArticles.length} Artikel\`);
     console.log(\`❌ Nicht verfügbar: \${unavailableArticles.length} Artikel\`);
+    if (totalPrice > 0) {
+        console.log(\`💰 Geschätzte Summe: \${totalPrice.toFixed(2).replace('.', ',')} €\`);
+    }
     
     if (unavailableArticles.length > 0) {
         console.log('%c\\nNicht verfügbare Artikel:', 'color: #ef4444; font-weight: bold;');
@@ -502,6 +518,9 @@
     console.log(\`❌ Nicht verfügbar: \${unavailableArticles.length}\`);
     console.log(\`🛒 Zum Warenkorb hinzugefügt: \${success}\`);
     if (errors > 0) console.log(\`⚠️ Fehler beim Hinzufügen: \${errors}\`);
+    if (totalPrice > 0) {
+        console.log(\`💰 Gesamtsumme: \${totalPrice.toFixed(2).replace('.', ',')} €\`);
+    }
     console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
     
     if (success > 0) {
