@@ -379,7 +379,7 @@
             const articlesJson = JSON.stringify(articles);
             
             const script = `
-// Playmobil Warenkorb-Helfer
+// Playmobil Warenkorb-Helfer (mit Verfügbarkeitsprüfung)
 // Generiert am: ${new Date().toLocaleString('de-DE')}
 // Artikel: ${articles.length}
 
@@ -390,12 +390,74 @@
     console.log('%c🛒 Playmobil Warenkorb-Helfer gestartet', 'font-size: 16px; font-weight: bold; color: #667eea;');
     console.log('Artikel zu verarbeiten:', articles.length);
     
-    let success = 0;
-    let errors = 0;
+    // ═══════════════════════════════════════════
+    // PHASE 1: Verfügbarkeit prüfen
+    // ═══════════════════════════════════════════
+    console.log('\\n%c🔍 Phase 1: Prüfe Verfügbarkeit...', 'font-size: 14px; font-weight: bold; color: #667eea;');
+    
+    const availableArticles = [];
+    const unavailableArticles = [];
     
     for (let i = 0; i < articles.length; i++) {
         const article = articles[i];
-        console.log(\`\\n[\${i + 1}/\${articles.length}] Füge hinzu: \${article.pid} (Menge: \${article.qty})\`);
+        console.log(\`[\${i + 1}/\${articles.length}] Prüfe: \${article.pid}\`);
+        
+        try {
+            const response = await fetch('/on/demandware.store/Sites-DE-Site/de_DE/SpareParts-Search?q=' + article.pid);
+            const html = await response.text();
+            
+            if (html.includes('spareParts__searchResults') && !html.includes('spareParts__noSearchResults')) {
+                let name = article.pid;
+                let price = '';
+                
+                const nameMatch = html.match(/"item_name":"([^"]+)"/);
+                if (nameMatch) name = nameMatch[1].replace(/&ouml;/g, 'ö').replace(/&auml;/g, 'ä').replace(/&uuml;/g, 'ü').replace(/&szlig;/g, 'ß');
+                
+                const priceMatch = html.match(/"price":([0-9.]+)/);
+                if (priceMatch) price = ' (' + parseFloat(priceMatch[1]).toFixed(2).replace('.', ',') + ' €)';
+                
+                console.log('%c  ✅ Verfügbar: ' + name + price, 'color: #22c55e;');
+                availableArticles.push({ ...article, name, price: priceMatch ? parseFloat(priceMatch[1]) : 0 });
+            } else {
+                console.log('%c  ❌ Nicht verfügbar', 'color: #ef4444;');
+                unavailableArticles.push(article.pid);
+            }
+        } catch (err) {
+            console.log('%c  ⚠️ Fehler beim Prüfen: ' + err.message, 'color: #fbbf24;');
+            unavailableArticles.push(article.pid);
+        }
+        
+        await new Promise(r => setTimeout(r, 200));
+    }
+    
+    // Zusammenfassung Phase 1
+    console.log('\\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+    console.log('%c📋 Verfügbarkeits-Übersicht', 'font-size: 14px; font-weight: bold;');
+    console.log(\`✅ Verfügbar: \${availableArticles.length} Artikel\`);
+    console.log(\`❌ Nicht verfügbar: \${unavailableArticles.length} Artikel\`);
+    
+    if (unavailableArticles.length > 0) {
+        console.log('%c\\nNicht verfügbare Artikel:', 'color: #ef4444; font-weight: bold;');
+        unavailableArticles.forEach(pid => console.log('   • ' + pid));
+    }
+    console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+    
+    if (availableArticles.length === 0) {
+        console.log('%c\\n⚠️ Keine verfügbaren Artikel zum Hinzufügen!', 'color: #fbbf24; font-size: 14px;');
+        return;
+    }
+    
+    // ═══════════════════════════════════════════
+    // PHASE 2: Verfügbare Artikel zum Warenkorb
+    // ═══════════════════════════════════════════
+    console.log('\\n%c🛒 Phase 2: Füge verfügbare Artikel zum Warenkorb hinzu...', 'font-size: 14px; font-weight: bold; color: #667eea;');
+    
+    let success = 0;
+    let errors = 0;
+    
+    for (let i = 0; i < availableArticles.length; i++) {
+        const article = availableArticles[i];
+        console.log(\`\\n[\${i + 1}/\${availableArticles.length}] \${article.name} (Menge: \${article.qty})\`);
         
         try {
             const formData = new FormData();
@@ -414,31 +476,36 @@
             const data = await response.json();
             
             if (data.error || data.success === 'false' || data.success === false) {
-                console.log('%c✗ Fehler: ' + (data.message || 'Unbekannter Fehler'), 'color: #ef4444;');
+                console.log('%c  ✗ Fehler: ' + (data.message || 'Unbekannter Fehler'), 'color: #ef4444;');
                 errors++;
             } else {
-                console.log('%c✓ Erfolgreich hinzugefügt!', 'color: #22c55e;');
+                console.log('%c  ✓ Hinzugefügt!', 'color: #22c55e;');
                 success++;
             }
         } catch (err) {
-            console.log('%c✗ Netzwerkfehler: ' + err.message, 'color: #ef4444;');
+            console.log('%c  ✗ Netzwerkfehler: ' + err.message, 'color: #ef4444;');
             errors++;
         }
         
-        if (i < articles.length - 1) {
-            console.log(\`Warte \${delay}ms...\`);
+        if (i < availableArticles.length - 1) {
             await new Promise(r => setTimeout(r, delay));
         }
     }
     
+    // ═══════════════════════════════════════════
+    // FINALE ZUSAMMENFASSUNG
+    // ═══════════════════════════════════════════
     console.log('\\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
-    console.log('%c📊 Zusammenfassung', 'font-size: 14px; font-weight: bold;');
-    console.log(\`✓ Erfolgreich: \${success}\`);
-    console.log(\`✗ Fehler: \${errors}\`);
+    console.log('%c📊 Finale Zusammenfassung', 'font-size: 14px; font-weight: bold;');
+    console.log(\`📦 Geprüft: \${articles.length} Artikel\`);
+    console.log(\`✅ Verfügbar: \${availableArticles.length}\`);
+    console.log(\`❌ Nicht verfügbar: \${unavailableArticles.length}\`);
+    console.log(\`🛒 Zum Warenkorb hinzugefügt: \${success}\`);
+    if (errors > 0) console.log(\`⚠️ Fehler beim Hinzufügen: \${errors}\`);
     console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
     
     if (success > 0) {
-        console.log('%c💡 Tipp: Aktualisiere die Seite, um den Warenkorb zu sehen!', 'color: #fbbf24;');
+        console.log('%c\\n💡 Tipp: Aktualisiere die Seite, um den Warenkorb zu sehen!', 'color: #fbbf24;');
     }
 })();
 `.trim();
