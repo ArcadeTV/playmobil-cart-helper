@@ -42,9 +42,10 @@ Das generierte Script läuft **direkt im Browser** und nutzt deine bestehende Se
 
 ## Installation
 
+**Repository:** [https://github.com/ArcadeTV/playmobil-cart-helper](https://github.com/ArcadeTV/playmobil-cart-helper)
+
 1. Lade die Datei `index.html` von GitHub herunter:
-   - Öffne die [GitHub-Repository-Seite](https://github.com/)
-   - Klicke auf `index.html`
+   - Öffne direkt die [index.html im Repository](https://github.com/ArcadeTV/playmobil-cart-helper/blob/main/index.html)
    - Klicke oben rechts auf **"Download raw file"** (Pfeil-nach-unten-Symbol)
 
 2. Öffne die heruntergeladene `index.html` Datei in deinem Browser (Doppelklick oder Rechtsklick → "Öffnen mit")
