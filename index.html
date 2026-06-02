@@ -258,26 +258,23 @@
 <body>
     <div class="container">
         <h1>Playmobil Warenkorb-Helfer</h1>
-        <p class="subtitle">Automatisiere das Hinzufügen mehrerer Artikel zum Warenkorb</p>
-
-        <div class="instructions">
-            <h3>⚠️ Wichtige Anleitung</h3>
-            <ol>
-                <li>Öffne <a href="https://www.playmobil.com" target="_blank">playmobil.com</a> in einem neuen Tab und melde dich an (falls nötig)</li>
-                <li>Gib unten deine Artikelliste ein</li>
-                <li>Klicke auf "Script generieren"</li>
-                <li>Kopiere das generierte Script</li>
-                <li>Öffne die Browser-Konsole auf playmobil.com (F12 → Console)</li>
-                <li>Füge das Script ein und drücke Enter</li>
-            </ol>
-        </div>
+        <p class="subtitle">Importiere Artikel in den Warenkorb oder exportiere einen bestehenden Warenkorb</p>
 
         <div class="tab-container">
-            <button class="tab active" data-tab="input">Artikelliste</button>
-            <button class="tab" data-tab="script">Generiertes Script</button>
+            <button class="tab active" data-tab="import">📥 Import</button>
+            <button class="tab" data-tab="export">📤 Export</button>
         </div>
 
-        <div id="tab-input" class="tab-content active">
+        <div id="tab-import" class="tab-content active">
+            <div class="instructions">
+                <h3>📥 Artikel in den Warenkorb importieren</h3>
+                <ol>
+                    <li>Gib unten deine Artikelliste ein (oder füge eine exportierte Liste ein)</li>
+                    <li>Klicke auf "Script generieren"</li>
+                    <li>Öffne <a href="https://www.playmobil.com" target="_blank">playmobil.com</a> und die Browser-Konsole (F12 → Console)</li>
+                    <li>Füge das Script ein und drücke Enter</li>
+                </ol>
+            </div>
             <div class="input-section">
                 <label for="articleList">Artikelnummern und Mengen:</label>
                 <textarea id="articleList" placeholder="30238993, 2
@@ -298,15 +295,69 @@
 
             <button class="btn btn-primary" onclick="generateScript()">🚀 Script generieren</button>
             <button class="btn btn-secondary" onclick="loadExample()">📋 Beispiel laden</button>
+
+            <div id="import-script-section" style="display: none; margin-top: 20px;">
+                <div class="input-section">
+                    <label>Kopiere dieses Script und führe es in der Browser-Konsole auf playmobil.com aus:</label>
+                    <div id="generated-script" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
+                        // Gib zuerst deine Artikelliste ein und klicke auf "Script generieren"
+                    </div>
+                    <button class="copy-btn" onclick="copyScript('generated-script')">📋 Script kopieren</button>
+                </div>
+            </div>
         </div>
 
-        <div id="tab-script" class="tab-content">
+        <div id="tab-export" class="tab-content">
+            <div class="instructions">
+                <h3>📤 Warenkorb exportieren</h3>
+                <ol>
+                    <li>Öffne deinen <a href="https://www.playmobil.com/de-de/warenkorb/" target="_blank">Warenkorb auf playmobil.com</a></li>
+                    <li>Kopiere das Export-Script (Button unten)</li>
+                    <li>Öffne die Browser-Konsole (F12 → Console)</li>
+                    <li>Füge das Script ein und drücke Enter</li>
+                    <li>Die Artikelliste wird automatisch in die Zwischenablage kopiert</li>
+                    <li>Füge die Liste hier im Import-Tab ein, um sie später wiederherzustellen</li>
+                </ol>
+            </div>
+
             <div class="input-section">
-                <label>Kopiere dieses Script und führe es in der Browser-Konsole auf playmobil.com aus:</label>
-                <div id="generated-script" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
-                    // Gib zuerst deine Artikelliste ein und klicke auf "Script generieren"
-                </div>
-                <button class="copy-btn" onclick="copyScript()">📋 Script kopieren</button>
+                <label>Export-Script:</label>
+                <div id="export-script" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">// Playmobil Warenkorb Export
+(function() {
+    const items = document.querySelectorAll('[data-pid]');
+    if (items.length === 0) {
+        console.log('%c⚠️ Warenkorb ist leer!', 'color: #fbbf24;');
+        return;
+    }
+    
+    console.log('%c📦 Warenkorb Export', 'font-size: 16px; font-weight: bold; color: #667eea;');
+    console.log('Gefunden:', items.length, 'Artikel\n');
+    
+    const exportLines = [];
+    items.forEach(item => {
+        const pid = item.dataset.pid;
+        const qtySelect = item.querySelector('.js-changeQuantity');
+        const qty = qtySelect ? qtySelect.value : '1';
+        
+        if (pid) {
+            exportLines.push(pid + ';' + qty);
+            console.log('  ' + pid + ' x' + qty);
+        }
+    });
+    
+    const exportText = exportLines.join('\n');
+    console.log('\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+    console.log('%c📋 Kopiere diesen Text in die App:', 'font-weight: bold;');
+    console.log('\n' + exportText + '\n');
+    console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #667eea;');
+    
+    navigator.clipboard.writeText(exportText).then(() => {
+        console.log('%c✅ In Zwischenablage kopiert!', 'color: #22c55e; font-weight: bold;');
+    }).catch(() => {
+        console.log('%c⚠️ Bitte manuell kopieren', 'color: #fbbf24;');
+    });
+})();</div>
+                <button class="copy-btn" onclick="copyScript('export-script')">📋 Export-Script kopieren</button>
             </div>
         </div>
 
@@ -331,6 +382,19 @@
 
         <div id="output"></div>
     </div>
+
+    <footer style="text-align: center; padding: 20px; margin-top: 20px; color: rgba(255,255,255,0.8); font-size: 13px;">
+        <p style="margin: 0 0 8px 0;">
+            Siehe 
+            <a href="https://github.com/ArcadeTV/playmobil-cart-helper" target="_blank" style="color: white; text-decoration: none;">
+                📦 GitHub Repository
+            </a>
+            für weitere Informationen.
+        </p>
+        <p style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.6);">
+            Dieses Tool ist ein unabhängiges Open-Source-Projekt und steht in keiner Verbindung zur Playmobil® / geobra Brandstätter Gruppe.
+        </p>
+    </footer>
 
     <script>
         // Tab switching
@@ -531,11 +595,8 @@
 
             document.getElementById('generated-script').textContent = script;
             
-            // Switch to script tab
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelector('[data-tab="script"]').classList.add('active');
-            document.getElementById('tab-script').classList.add('active');
+            // Show the script section within import tab
+            document.getElementById('import-script-section').style.display = 'block';
             
             // Show stats preview
             document.getElementById('stats').style.display = 'flex';
@@ -546,10 +607,12 @@
             log('Script generiert für ' + articles.length + ' Artikel', 'success');
         }
 
-        function copyScript() {
-            const script = document.getElementById('generated-script').textContent;
+        function copyScript(elementId) {
+            const script = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(script).then(() => {
-                const btn = document.querySelector('.copy-btn');
+                // Find the button that was clicked (next to the element)
+                const container = document.getElementById(elementId).parentElement;
+                const btn = container.querySelector('.copy-btn');
                 const originalText = btn.textContent;
                 btn.textContent = '✓ Kopiert!';
                 btn.style.background = '#22c55e';
