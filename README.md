@@ -1,13 +1,14 @@
 # 🛒 Playmobil Warenkorb-Helfer
 
-Ein Tool zum automatischen Befüllen des Playmobil-Warenkorbs anhand einer Artikelliste.
+Ein Tool zum automatischen Befüllen des Playmobil-Warenkorbs anhand einer Artikelliste – und zum Exportieren eines bestehenden Warenkorbs.
 
 ## 📋 Inhaltsverzeichnis
 
 - [Überblick](#überblick)
 - [Voraussetzungen](#voraussetzungen)
 - [Installation](#installation)
-- [Verwendung](#verwendung)
+- [Import – Artikel in den Warenkorb](#import--artikel-in-den-warenkorb)
+- [Export – Warenkorb sichern](#export--warenkorb-sichern)
 - [Eingabeformat](#eingabeformat)
 - [Browser-Konsole öffnen](#browser-konsole-öffnen)
 - [Paste-Protection deaktivieren](#paste-protection-deaktivieren)
@@ -60,15 +61,17 @@ Falls du das Tool offline nutzen möchtest:
 
 ---
 
-## Verwendung
+## Import – Artikel in den Warenkorb
+
+Mit der **Import-Funktion** kannst du eine Liste von Artikeln automatisch in den Warenkorb legen.
 
 ### Schritt 1: Tool öffnen
 
-Öffne die `index.html` Datei in deinem Browser.
+Öffne das Tool im Browser (siehe [Installation](#installation)).
 
 ### Schritt 2: Artikelliste eingeben
 
-Gib deine Artikel im Format `Artikelnummer, Menge` ein (eine Zeile pro Artikel).
+Gib deine Artikel im Tab **"📥 Import"** im Format `Artikelnummer, Menge` ein (eine Zeile pro Artikel).
 
 ### Schritt 3: Script generieren
 
@@ -99,11 +102,45 @@ Füge das kopierte Script in die Konsole ein und drücke **Enter**.
 
 ### Schritt 9: Warten
 
-Das Script arbeitet die Liste ab. Du siehst den Fortschritt in der Konsole.
+Das Script prüft zuerst die Verfügbarkeit aller Artikel und fügt dann nur die verfügbaren Artikel zum Warenkorb hinzu. Du siehst den Fortschritt in der Konsole.
 
 ### Schritt 10: Seite aktualisieren
 
 Nach Abschluss die Seite neu laden, um den gefüllten Warenkorb zu sehen.
+
+---
+
+## Export – Warenkorb sichern
+
+Mit der **Export-Funktion** kannst du deinen aktuellen Warenkorb sichern und später wiederherstellen.
+
+### Schritt 1: Tool benutzen
+
+Öffne das Tool und wechsle zum Tab **"📤 Export"**.
+
+### Schritt 2: Export-Script kopieren
+
+Klicke auf **"📋 Export-Script kopieren"**.
+
+### Schritt 3: Warenkorb öffnen
+
+Öffne deinen [Warenkorb auf playmobil.com](https://www.playmobil.com/de-de/warenkorb/).
+
+### Schritt 4: Browser-Konsole öffnen
+
+Siehe [Browser-Konsole öffnen](#browser-konsole-öffnen).
+
+### Schritt 5: Script ausführen
+
+Füge das Export-Script in die Konsole ein und drücke **Enter**.
+
+### Schritt 6: Artikelliste speichern
+
+Die Artikelliste wird automatisch in die Zwischenablage kopiert. Speichere sie in einer Textdatei oder füge sie direkt im **Import-Tab** ein.
+
+### Später wiederherstellen
+
+Um den Warenkorb wiederherzustellen, füge die gespeicherte Liste einfach im **Import-Tab** ein und führe das Import-Script aus.
 
 ---
 
@@ -317,6 +354,13 @@ Dieses Tool ist für den persönlichen Gebrauch bestimmt. Nutzung auf eigene Ver
 ---
 
 ## Changelog
+
+### v1.1.0
+
+- **Neu:** Export-Funktion zum Sichern des Warenkorbs
+- **Neu:** Verfügbarkeitsprüfung vor dem Hinzufügen
+- **Neu:** Preisanzeige und Gesamtsumme
+- Umstrukturierung in Import/Export Tabs
 
 ### v1.0.0
 
